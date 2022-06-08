@@ -41,7 +41,8 @@ const createUser = async (req, res = response) => {
             ok: true,
             uid: userDB.id,
             name,
-            token
+            token,
+            email
         });
 
     }
@@ -61,8 +62,8 @@ const loginUser = async (req, res = response) => {
 
         if (!userDB)
             return res.status(400).json({
-                Ok: false,
-                Msg: 'El correo no existe'
+                ok: false,
+                msg: 'El correo no existe'
             });
 
         //Verificar contraseña
@@ -71,8 +72,8 @@ const loginUser = async (req, res = response) => {
 
         if (!validPssword)
             return res.status(400).json({
-                Ok: false,
-                Msg: 'Contraseña incorrecta'
+                ok: false,
+                msg: 'Contraseña incorrecta'
             });
 
         //Generar JWT
@@ -80,33 +81,38 @@ const loginUser = async (req, res = response) => {
 
         //Respuesta correcta
         return res.json({
-            Ok: true,
+            ok: true,
             uid: userDB.id,
             name: userDB.name,
-            token
+            token,
+            email
         });
 
 
     }
     catch (error) {
         return res.status(500).json({
-            Ok: false,
-            Msg: 'Comuniquese con el admin de la appp'
+            ok: false,
+            msg: 'Comuniquese con el admin de la appp'
         });
     }
 }
 
 const renewToken = async (req, res = response) => {
-    const { uid, name } = req;
+    const { uid } = req;
+
+    //Obtener el email de la bd
+    const dbUser = await User.findById(uid);
 
     //Generar JWT
-    const token = await generateJWT(uid, name);
+    const token = await generateJWT(uid, dbUser.name);
 
     return res.json({
-        Ok: true,
+        ok: true,
         uid,
-        name,
-        token
+        name: dbUser.name,
+        token,
+        email: dbUser.email
     });
 }
 
